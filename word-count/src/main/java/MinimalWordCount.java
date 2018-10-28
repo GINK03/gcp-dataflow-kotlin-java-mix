@@ -30,23 +30,36 @@ import org.apache.beam.sdk.transforms.FlatMapElements;
 import org.apache.beam.sdk.transforms.MapElements;
 import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.TypeDescriptors;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.GroupByKey;
+import org.apache.beam.sdk.transforms.PTransform;
+import org.apache.beam.sdk.transforms.join.CoGroupByKey;
+import org.apache.beam.sdk.values.KV;
+import org.apache.beam.sdk.values.POutput;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.transforms.Combine;
+class JProc1 extends DoFn<KV<String, Iterable<Integer>>,String> {
+  @ProcessElement
+  public void processElement(@Element KV<String,Iterable<Integer>> kv, OutputReceiver<String> out) { 
+    kt.funcs.kproc4(kv, out); 
+    //String key = kv.getKey().toString();
+    //out.output(key);
+  }
+}
 
 public class MinimalWordCount {
   public static void main(String[] args) {
+    //kt.funcs.filter1(" ");
     PipelineOptions options = PipelineOptionsFactory.create();
     Pipeline p = Pipeline.create(options);
-    p.apply(TextIO.read().from("gs://apache-beam-samples/shakespeare/*"))
-        .apply(
-            FlatMapElements.into(TypeDescriptors.strings())
-                .via((String word) -> Arrays.asList(word.split("[^\\p{L}]+"))))
-        .apply(Filter.by((String word) -> !word.isEmpty()))
-        .apply(Count.perElement())
-        .apply(
-            MapElements.into(TypeDescriptors.strings())
-                .via(
-                    (KV<String, Long> wordCount) ->
-                        wordCount.getKey() + ": " + wordCount.getValue()))
-        .apply(TextIO.write().to("wordcounts"));
+    PCollection p1 = p.apply(TextIO.read().from("gs://apache-beam-samples/shakespeare/*"))
+        .apply( ParDo.of(new kt.KProc1()))
+        .apply( Filter.by( (String chars) -> kt.funcs.filter1(chars) ))
+        .apply( ParDo.of(new kt.KProc2()))
+        .apply( GroupByKey.create())
+        .apply( ParDo.of(new JProc1()) );
+    POutput p2 = p1.apply( TextIO.write().to("wordcounts") );
     p.run().waitUntilFinish();
   }
 }
