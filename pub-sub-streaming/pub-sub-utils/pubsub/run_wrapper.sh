@@ -1,0 +1,4 @@
+export GOOGLE_CLOUD_PROJECT=wild-yukikaze
+export PUBSUB_VERIFICATION_TOKEN=1223334444
+export PUBSUB_TOPIC=testTopic1
+python main.py
