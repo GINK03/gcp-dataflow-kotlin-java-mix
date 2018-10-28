@@ -1,16 +1,23 @@
 
-import com.google.cloud.dataflow.sdk.Pipeline
-import com.google.cloud.dataflow.sdk.io.TextIO
-import com.google.cloud.dataflow.sdk.options.DataflowPipelineOptions
-import com.google.cloud.dataflow.sdk.options.PipelineOptionsFactory
-import com.google.cloud.dataflow.sdk.runners.BlockingDataflowPipelineRunner
-import com.google.cloud.dataflow.sdk.transforms.Count
-import com.google.cloud.dataflow.sdk.transforms.DoFn
-import com.google.cloud.dataflow.sdk.transforms.DoFn.*
-import com.google.cloud.dataflow.sdk.transforms.ParDo                                                                                                        
-import com.google.cloud.dataflow.sdk.values.KV 
-import com.google.cloud.dataflow.sdk.transforms.GroupByKey
+import org.apache.beam.sdk.Pipeline
+import org.apache.beam.sdk.io.TextIO
+//import org.apache.beam.sdk.io.PubsubIO
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO
+//import org.apache.beam.sdk.options
+//import org.apache.beam.sdk.options.DataflowPipelineOptions
+//import org.apache.beam.sdk.options.PipelineOptionsFactory
+//import org.apache.beam.sdk.runners.BlockingDataflowPipelineRunner
+import org.apache.beam.sdk.options.PipelineOptions
+import org.apache.beam.sdk.options.PipelineOptionsFactory
+import org.apache.beam.sdk.transforms.Count
+import org.apache.beam.sdk.transforms.DoFn
+import org.apache.beam.sdk.transforms.DoFn.*
+import org.apache.beam.sdk.transforms.ParDo                                                                                                        
+import org.apache.beam.sdk.values.KV 
+import org.apache.beam.sdk.transforms.GroupByKey
 
+import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions
+//import com.google.cloud.dataflow.sdk.options.DataflowPipelineOptions
 
 val KotlinHelloString : String = "Hello from Kotlin!"
 
@@ -19,7 +26,8 @@ fun getHelloStringFromJava() : String {
 }
 
 public class KotlinProc1 : DoFn<String, String>() {
-  override fun processElement(c : DoFn<String,String>.ProcessContext) {
+  @ProcessElement 
+  fun processElement(c : DoFn<String,String>.ProcessContext) {
     val elem = c.element()
     elem.toList().map { 
       val char = it.toString()
@@ -28,14 +36,17 @@ public class KotlinProc1 : DoFn<String, String>() {
   }
 }
 
-public class KotlinProc2 : DoFn<String, KV<String, String>>() {
-  override fun processElement(c : DoFn<String, KV<String,String>>.ProcessContext) {
+public class KotlinProc2 : DoFn<String, KV<String, Int>>() {
+  @ProcessElement 
+  fun processElement(c : ProcessContext) {
     val char = c.element()
-    c.output(KV.of(char, "1"))
+    c.output(KV.of(char, 1))
   }
 }
-public class KotlinProc3 : DoFn<KV<String, Iterable<String>>, String>() {
-  override fun processElement(c : DoFn<KV<String, Iterable<String>>, String>.ProcessContext) {
+
+public class KotlinProc3 : DoFn<KV<String, Iterable<Int>>, String>() {
+  @ProcessElement 
+  fun processElement(c : ProcessContext) {
     val key = c.element().getKey()
     val iter = c.element().getValue()
     val list = mutableListOf<String>()
@@ -51,16 +62,16 @@ fun main( args : Array<String> ) {
   // define staging directory
   options.setStagingLocation( "gs://abc-wild/STAGING" )
   // args order, 1st -> options, 2nd -> input data bucket, 3rd -> output data bucket
-  runner(options, "gs://dataflow-samples/shakespeare/*", "gs://abc-wild/OUTPUT" )
+  runner(options, "testSub1", "gs://abc-wild/OUTPUTS/OUTPUT" )
 }
 
 fun runner(options: DataflowPipelineOptions, input:String, output: String) {
   val p:Pipeline = Pipeline.create(options)
-  p.apply( TextIO.Read.from(input) )
-    .apply( ParDo.named("ExtractWords1").of( KotlinProc1() ) )
-    .apply( ParDo.named("make kv").of( KotlinProc2() ) )
-    .apply( GroupByKey.create<String,String>() )
-    .apply( ParDo.named("FormatResults").of( KotlinProc3() ) )
-    .apply( TextIO.Write.to(output) )
-  p.run()
+  p.apply( TextIO.read().from(input) )
+    .apply( ParDo.of( KotlinProc1() ) )
+    .apply( ParDo.of( KotlinProc2() ) )
+    .apply( GroupByKey.create<String,Int>() )
+    .apply( ParDo.of( KotlinProc3() ) )
+    .apply( TextIO.write().to(output) )
+  p.run().waitUntilFinish()
 }
