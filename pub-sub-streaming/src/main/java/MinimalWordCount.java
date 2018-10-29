@@ -39,6 +39,10 @@ import org.apache.beam.sdk.values.KV;
 import org.apache.beam.sdk.values.POutput;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.transforms.Combine;
+import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions;
+import org.apache.beam.runners.dataflow.DataflowRunner;
+import org.apache.beam.sdk.io.gcp.pubsub.PubsubIO;
+
 class JProc1 extends DoFn<KV<String, Iterable<Integer>>,String> {
   @ProcessElement
   public void processElement(@Element KV<String,Iterable<Integer>> kv, OutputReceiver<String> out) { 
@@ -51,7 +55,14 @@ class JProc1 extends DoFn<KV<String, Iterable<Integer>>,String> {
 public class MinimalWordCount {
   public static void main(String[] args) {
     //kt.funcs.filter1(" ");
-    PipelineOptions options = PipelineOptionsFactory.create();
+    DataflowPipelineOptions options = PipelineOptionsFactory.create().as(DataflowPipelineOptions.class);
+    options.setProject("wild-yukikaze");
+    options.setStagingLocation("gs://abc-wild/STAGING");
+		options.setTempLocation("gs://abc-wild/TMP");
+		options.setRunner(DataflowRunner.class);
+		options.setStreaming(true);
+    options.setJobName("streamingJob");
+
     Pipeline p = Pipeline.create(options);
     PCollection p1 = p.apply(TextIO.read().from("gs://apache-beam-samples/shakespeare/*"))
         .apply( ParDo.of(new kt.KProc1()))
@@ -59,7 +70,7 @@ public class MinimalWordCount {
         .apply( ParDo.of(new kt.KProc2()))
         .apply( GroupByKey.create())
         .apply( ParDo.of(new JProc1()) );
-    POutput p2 = p1.apply( TextIO.write().to("wordcounts") );
+    POutput p2 = p1.apply( TextIO.write().to("gs://abc-wild/OUTPUT") );
     p.run().waitUntilFinish();
   }
 }
