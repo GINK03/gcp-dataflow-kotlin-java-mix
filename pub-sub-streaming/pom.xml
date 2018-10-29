@@ -82,7 +82,7 @@
     <autovalue.version>1.6.2</autovalue.version>
     <excluded.spanner.tests>com.google.cloud.teleport.spanner.IntegrationTest</excluded.spanner.tests>
 
-        <kotlin.version>1.0.1-2</kotlin.version>
+        <kotlin.version>1.2.0</kotlin.version>
         <junit.version>4.12</junit.version>
         <main.class>kotlin.KotlinDataFlowKt</main.class>
   </properties>
@@ -408,41 +408,78 @@
     </pluginManagement>
 
     <plugins>
-            <plugin>
-                <artifactId>kotlin-maven-plugin</artifactId>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <version>1.2.71</version>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <goals> <goal>compile</goal> </goals>
-                        <configuration>
-                            <sourceDirs>
-                                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
-                                <sourceDir>${project.basedir}/src/main/java</sourceDir>
-                            </sourceDirs>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>   
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>${maven-dependency-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>analyze-dependencies</id>
+          <artifactId>kotlin-maven-plugin</artifactId>
+          <groupId>org.jetbrains.kotlin</groupId>
+          <version>${kotlin.version}</version>
+          <executions>
+              <execution>
+                  <id>compile</id>
+                  <phase>compile</phase>
+                  <goals> <goal>compile</goal> </goals>
+                    <configuration>
+                        <sourceDirs>
+                            <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+                            <sourceDir>${project.basedir}/src/main/java</sourceDir>
+                        </sourceDirs>
+                    </configuration>
+              </execution>
+          </executions>
+      </plugin>   
+      <!-- for .java -->
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.6.1</version>
+          <executions>
+              <!-- Replacing default-compile as it is treated specially by maven -->
+        <execution>
+            <id>default-compile</id>
+            <phase>none</phase>
+        </execution>
+        <!-- Replacing default-testCompile as it is treated specially by maven -->
+        <execution>
+            <id>default-testCompile</id>
+            <phase>none</phase>
+        </execution>
+        <execution>
+            <id>compile</id>
+            <phase>compile</phase>
             <goals>
-              <goal>analyze-only</goal>
+                <goal>compile</goal>
             </goals>
-            <configuration>
-              <!-- Ignore runtime-only dependencies in analysis -->
-              <ignoreNonCompile>true</ignoreNonCompile>
-              <failOnWarning>true</failOnWarning>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+        </execution>
+        <execution>
+            <id>testCompile</id>
+            <phase>test-compile</phase>
+            <goals>
+                <goal>testCompile</goal>
+            </goals>
+        </execution>
+    </executions>
+    <configuration>
+        <source>1.8</source>
+        <target>1.8</target>
+    </configuration>
+</plugin>
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-dependency-plugin</artifactId>
+  <version>${maven-dependency-plugin.version}</version>
+  <executions>
+    <execution>
+      <id>analyze-dependencies</id>
+      <goals>
+        <goal>analyze-only</goal>
+      </goals>
+      <configuration>
+        <!-- Ignore runtime-only dependencies in analysis -->
+        <ignoreNonCompile>true</ignoreNonCompile>
+        <failOnWarning>true</failOnWarning>
+      </configuration>
+    </execution>
+  </executions>
+</plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -644,7 +681,7 @@
          <artifactId>exec-maven-plugin</artifactId>
          <version>1.2.1</version>
          <configuration>
-             <mainClass>SubKt</mainClass>
+             <mainClass>MinimalWordCount</mainClass>
          </configuration>
       </plugin>
     </plugins>

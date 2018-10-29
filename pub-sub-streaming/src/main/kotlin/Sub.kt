@@ -48,3 +48,9 @@ public fun kproc4(kv:KV<String, Iterable<Int>>, rec:OutputReceiver<String>) {
 }
 
 
+public fun testCall() {
+  println("testCall")
+}
+fun main(args:Array<String>) {
+  println("this is kotlin program")
+}
