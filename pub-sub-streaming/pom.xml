@@ -57,7 +57,7 @@
         <dependency>
           <groupId>com.google.api-client</groupId>
           <artifactId>google-api-client</artifactId>
-          <version>1.22.0</version>
+          <version>[1.22.0, 1.99.0)</version>
           <exclusions>
             <!-- Exclude an old version of guava that is being pulled
                  in by a transitive dependency of google-api-client -->
@@ -85,7 +85,7 @@
         <dependency>
           <groupId>com.google.http-client</groupId>
           <artifactId>google-http-client</artifactId>
-          <version>1.22.0</version>
+          <version>[1.22.0, 1.99.0)</version>
           <exclusions>
             <!-- Exclude an old version of guava that is being pulled
                  in by a transitive dependency of google-api-client -->
@@ -229,7 +229,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>1.2.1</version>
                 <configuration>
-                    <mainClass>KotlinDataFlowKt</mainClass>
+                    <mainClass>MinimalWordCount</mainClass>
                 </configuration>
             </plugin>
         </plugins>
