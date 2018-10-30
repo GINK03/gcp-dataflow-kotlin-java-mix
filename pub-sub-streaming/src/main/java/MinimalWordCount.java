@@ -42,10 +42,10 @@ public class MinimalWordCount {
 		options.setTempLocation("gs://abc-wild/tmp");
 		options.setRunner(DataflowRunner.class);
 		options.setStreaming(true);
-    options.setJobName("streamingJob");
+    options.setJobName("streamingJob2");
 
     Pipeline p = Pipeline.create(options);
-    PCollection p1 = p.apply(PubsubIO.readStrings().fromSubscription("projects/wild-yukikaze/subscriptions/testSub1"))
+    PCollection p1 = p.apply(PubsubIO.readStrings().fromSubscription("projects/wild-yukikaze/subscriptions/Sub2"))
         .apply(Window.<String>into(FixedWindows.of(Duration.standardMinutes(5))));
     POutput p2 = p1.apply( TextIO.write()
                 .withWindowedWrites()
