@@ -11,6 +11,9 @@ GoogleのDataFlowのSDK version 1.XがEnd of Lifeなるということで、プ�
   
 ## Pub/Subとは
 push. pull方式で記す
+<div align="center">
+ <img width="600px" src="https://user-images.githubusercontent.com/4949982/47798066-f31f8080-dd6a-11e8-95b8-3bdb9aac47fc.png">
+</div>
 
 ## DataFlowのstreaming処理方法
 windowで定期的にスキャンしている
