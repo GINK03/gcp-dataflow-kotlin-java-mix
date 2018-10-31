@@ -17,7 +17,12 @@ Pub/Subは、細切れになりがちなデータを効率的に他のサービ�
 </div>
 <div align="center"> 図1. </div>
 
-データを何らかの方法で集めて、Topicとよばれる粒度で送信し、Subscriptionに連結したサービスにつなぎます。  
+データを何らかの方法で集めて、Topicとよばれる粒度で送信し、Subscriptionに連結したサービスにつなぎます。
+
+<div align="center">
+ <img width="600px" src="https://user-images.githubusercontent.com/4949982/47800032-d5541a80-dd6e-11e8-9b52-bdddda5a9e74.png">
+</div>
+<div align="center"> 図2. </div>
 
 これは、一般的なログ収集基盤の基本的な構成になっており、最終的な出力先をBigQueryにすれば、高速な分析基盤がサーバレスで作れますし、画像や言語のような非構造なデータであれば、CloudStrageを出力先にすることもできます。 
 
