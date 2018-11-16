@@ -33,8 +33,6 @@ DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得
 DataFlowは背景にGCEのインスタンスが起動することになり、立ちっぱになるので、そこはbatch処理より安くない要因になっているように思います。  
 
 
-
-
 ## パイプラインのSDK 1.Xからのシンタックスの変更部分
 Java固定になった部分、ネームスペースが変更になった部分、型推論の部分
 
@@ -43,4 +41,6 @@ refere : https://cloud.google.com/appengine/docs/flexible/python/writing-and-res
 
 ## Google App Engineで最初にデータを受け取る口を作る
   Pub/Subに投入する前に、Google App EngineでJSONデータ等を受け取る必要があります。 
-  このとき、
+  このとき、 `https://cloud.google.com/appengine/docs/standard/python3/quickstart` を参考に、簡単なアプリを開発可能です。  
+  
+  
