@@ -1,1 +1,1 @@
-gcloud beta pubsub topics create testTopic1
+gcloud beta pubsub topics create testTopic2

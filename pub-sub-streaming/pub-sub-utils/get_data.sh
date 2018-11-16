@@ -1,2 +1,1 @@
-curl https://wild-yukikaze.appspot.com
-
+gcloud pubsub subscriptions pull sub2
