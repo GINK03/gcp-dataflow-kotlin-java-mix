@@ -41,3 +41,6 @@ Java固定になった部分、ネームスペースが変更になった部分�
 ### 2. appengineの動作設定
 refere : https://cloud.google.com/appengine/docs/flexible/python/writing-and-responding-to-pub-sub-messages
 
+## Google App Engineで最初にデータを受け取る口を作る
+  Pub/Subに投入する前に、Google App EngineでJSONデータ等を受け取る必要があります。 
+  このとき、
