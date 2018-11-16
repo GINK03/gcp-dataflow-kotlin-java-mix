@@ -37,20 +37,20 @@ public class MinimalWordCount {
   public static void main(String[] args) {
     kt.funcs.testCall();
     DataflowPipelineOptions options = PipelineOptionsFactory.create().as(DataflowPipelineOptions.class);
-    options.setProject("wild-yukikaze");
-    options.setStagingLocation("gs://abc-wild/STAGING");
-		options.setTempLocation("gs://abc-wild/tmp");
+    options.setProject("dena-ai-training-16-gcp");
+    options.setStagingLocation("gs://abc-tmp/STAGING");
+		options.setTempLocation("gs://abc-tmp/tmp");
 		options.setRunner(DataflowRunner.class);
 		options.setStreaming(true);
     options.setJobName("streamingJob2");
 
     Pipeline p = Pipeline.create(options);
-    PCollection p1 = p.apply(PubsubIO.readStrings().fromSubscription("projects/wild-yukikaze/subscriptions/Sub2"))
+    PCollection p1 = p.apply(PubsubIO.readStrings().fromSubscription("projects/dena-ai-training-16-gcp/subscriptions/sub1"))
         .apply(Window.<String>into(FixedWindows.of(Duration.standardMinutes(5))));
     POutput p2 = p1.apply( TextIO.write()
                 .withWindowedWrites()
                 .withNumShards(10)
-                .to("gs://abc-wild/OUTPUT2") );
+                .to("gs://abc-tmp/OUTPUT2") );
         //.apply( ParDo.of(new kt.KProc1()))
         //.apply( Filter.by( (String chars) -> kt.funcs.filter1(chars) ))
         //.apply( ParDo.of(new kt.KProc2()))
