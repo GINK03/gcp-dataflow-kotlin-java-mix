@@ -37,8 +37,40 @@ $.ajax({
     }
 });
 ```
-
 ## Google App EngineからPub/Subへの繋ぎ
+
+ユーザの画面のJSから受け取ったJSONデータを一度、app engineでパースして、pub/subにpublisherで発行することができます。  
+
+appengineに登録したコードはこのようなもを書きました。(golangとかの方が、いろいろと早いらしくいいらしいのですが、書きなれていないので、pythonのflaskを用いました)  
+```python
+from flask import Flask, request, jsonify
+import json
+from google.cloud import pubsub_v1
+import google.auth
+from google.oauth2 import service_account
+info = json.load(open('./pubsub-publisher.json'))
+credentials = service_account.Credentials.from_service_account_info(info)
+
+app = Flask(__name__)
+
+@app.route("/json",  methods=['GET', 'POST'])
+def json_path():
+        content = request.json
+        print(content)
+
+        publisher = pubsub_v1.PublisherClient(credentials=credentials)
+
+        project_id = 'YOUR_PROJECT # project_idを入れる 
+        topic_name = 'YOUR_TOPIC'  # publish先のtopicネームを入れる
+        topic_path = publisher.topic_path(project_id, topic_name)
+
+        data = json.dumps(content)
+        future = publisher.publish(topic_path, data=data.encode('utf8')) # publishできるのはbytes型になる
+        return f"<h1 style='color:blue'>OK</h1>"
+
+if __name__ == '__main__':
+        app.run(host='127.0.0.1', port=8080, debug=True)
+```
 
 ## Pub/Subとは
 
