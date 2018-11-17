@@ -100,6 +100,33 @@ DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得
 
 streamingのDataFlowはGCEのインスタンスが起動し、定期的に実行していることでstreamingとしているので、インスタンスが立ちっぱになるので、そこはbatch処理より安くない要因になっているように思います。  
 
+## DataFlow pipeline  
+DataFlowはpipelineで動作を定義することができ、jsonでデータが入力されているとすると、何かのサニタイズ処理、パース処理、変換処理を行うことができ、ここで、すでに分析角度が決定しているのであれば、BigQueryに投入すればいいはずです。  
+
+```java
+public class MinimalWordCount {
+  public static void main(String[] args) {
+    kt.funcs.testCall();
+    DataflowPipelineOptions options = PipelineOptionsFactory.create().as(DataflowPipelineOptions.class); //Dataflow.classを用いているがただのPipeLineだとローカルで動作する
+    options.setProject("ai-training-16-gcp");           // GCPのプロジェクトを追加する
+    options.setStagingLocation("gs://abc-tmp/STAGING"); // stagingはJavaのコンパイルされたjarファイル等が置かれる
+                options.setTempLocation("gs://abc-tmp/tmp"); // 何かの中間ファイルなどが吐かれる、ことがある
+                options.setRunner(DataflowRunner.class);
+                options.setStreaming(true);
+    options.setJobName("streamingJob6"); // Jobの名前
+
+    Pipeline p = Pipeline.create(options);
+    PCollection p1 = p.apply(PubsubIO.readStrings().fromSubscription("projects/ai-training-16-gcp/subscriptions/sub3")) // Pub/Subのデータをpull方式で取得できるサブスクリプションを追加する
+        .apply(Window.<String>into(FixedWindows.of(Duration.standardMinutes(1)))); // 何分ごとにpullしてデータを処理するか
+    POutput p2 = p1.apply( TextIO.write() // ここにpipelineで処理を追加すれば必要な変換やサニタイズを行うことができますが、直接GCSに吐き出しています。  
+                .withWindowedWrites()
+                .withNumShards(1)
+                .to("gs://abc-tmp/OUTPUT") );
+    p.run().waitUntilFinish();
+  }
+}
+```
+
 
 ## パイプラインのSDK 1.Xからのシンタックスの変更部分
 Java固定になった部分、ネームスペースが変更になった部分、型推論の部分
