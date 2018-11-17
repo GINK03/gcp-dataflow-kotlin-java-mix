@@ -94,7 +94,7 @@ DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得
 いろいろな用途が期待され、うまくスキャン間隔を設定することで、リアルタイムの異常検出などもできます(下図のstreaming + accumulationが該当するかと思われます)。  
 
 <div align="center">
-  <img width="650px" src="https://www.google.co.jp/url?sa=i&source=images&cd=&cad=rja&uact=8&ved=2ahUKEwiQwcadltveAhXTAYgKHWgDAjwQjRx6BAgBEAU&url=https%3A%2F%2Flabs.spotify.com%2F2017%2F10%2F16%2Fbig-data-processing-at-spotify-the-road-to-scio-part-1%2F&psig=AOvVaw3BVgVnnmMpVWxVvhJH8bot&ust=1542535376101056">
+  <img width="650px" src="https://spotifylabscom.files.wordpress.com/2017/10/beam-model.png?w=730&zoom=2">
  <div> 図4. (spotifyのブログより) </div>
 </div>
 
