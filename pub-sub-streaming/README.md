@@ -104,7 +104,6 @@ streamingのDataFlowはGCEのインスタンスが起動し、定期的に実行
 DataFlowはpipelineで動作を定義することができ、jsonでデータが入力されているとすると、何かのサニタイズ処理、パース処理、変換処理を行うことができ、ここで、すでに分析角度が決定しているのであれば、BigQueryに投入すればいいはずです。  
 
 ```java
-public class MinimalWordCount {
   public static void main(String[] args) {
     kt.funcs.testCall();
     DataflowPipelineOptions options = PipelineOptionsFactory.create().as(DataflowPipelineOptions.class); //Dataflow.classを用いているがただのPipeLineだとローカルで動作する
@@ -124,12 +123,29 @@ public class MinimalWordCount {
                 .to("gs://abc-tmp/OUTPUT") );
     p.run().waitUntilFinish();
   }
-}
 ```
 
+## Beam SDK 1.Xから2.Xで対応すべきこと  
+最初の頃は、JavaをKotlinで一部ラップアップして使っていたのですが、どうにも2.Xにしてからうまく動作しません。  
+わかったことでは、パイプラインの.applyメソッドをチェーンして動作を定義していくのですが、型推論に失敗するようです。  
 
-## パイプラインのSDK 1.Xからのシンタックスの変更部分
-Java固定になった部分、ネームスペースが変更になった部分、型推論の部分
+そのため、かなり冗長ですが、このように、型推論に失敗する段階で、POoutputの変数に束縛することで、動作します（ツラすぎる...）  
+(以下はminimal wordcountの例)  
+```java
+  public static void main(String[] args) {
+    //kt.funcs.filter1(" ");
+    PipelineOptions options = PipelineOptionsFactory.create();
+    Pipeline p = Pipeline.create(options);
+    PCollection p1 = p.apply(TextIO.read().from("gs://apache-beam-samples/shakespeare/*"))
+        .apply( ParDo.of(new kt.KProc1()))
+        .apply( Filter.by( (String chars) -> kt.funcs.filter1(chars) ))
+        .apply( ParDo.of(new kt.KProc2()))
+        .apply( GroupByKey.create())
+        .apply( ParDo.of(new JProc1()) );
+    POutput p2 = p1.apply( TextIO.write().to("wordcounts") ); // ここで、このようにする必要がある
+    p.run().waitUntilFinish();
+  }
+```
 
 ### 2. appengineの動作設定
 refere : https://cloud.google.com/appengine/docs/flexible/python/writing-and-responding-to-pub-sub-messages
