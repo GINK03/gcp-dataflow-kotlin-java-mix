@@ -1,13 +1,13 @@
 
-# Pub/Sub + Apache Beam（Cloud DataFlow）でログコレクターの例
+# Pub/Sub + Apache Beam（Cloud DataFlow）でログコレクターを作成する
 
-モダンなサーバレスアーキテクチャのログ収集基盤である、Pub/SubとDataFlowのコンビネーションなのです。  
+モダンなサーバレスアーキテクチャのログ収集基盤を、GAE + Pub/Sub + DataFlow + GCS or BigQueryのコンビネーションで作成が加工です。  
 
-GoogleのDataFlowのSDK version 1.XがEnd of Lifeなるということで、プログラムの移行及び、streaming処理について記述します。  
+また、GoogleのDataFlowのSDK version 1.XがEnd of Lifeなるということで、プログラムの移行及び、streaming処理について記述します。  
 
 ## ローカルで開発するときにの注意点
- - 1. JDKはOracle JDKの1.8を使う
- - 2. Java互換の言語が型の推論に失敗する用になるので、一部Javaで記述する必要がある
+ - 1. JDKはOracle JDKの1.8を使う(OpenJDKではダメ)
+ - 2. Kotlin, Scalaなどで記述することも一部できるが、Java互換の言語が型の推論に失敗する用になるので、メインの部分はJavaで記述する必要がある
   
 ## Pub/Subとは
 
