@@ -1,9 +1,11 @@
 
 # Pub/Sub + Apache Beam（Cloud DataFlow）でログコレクターを作成する
 
-モダンなサーバレスアーキテクチャのログ収集基盤を、GAE + Pub/Sub + DataFlow + GCS or BigQueryのコンビネーションで作成が可能です。  
+モダンなサーバレスアーキテクチャのログ収集基盤を、App Engine + Pub/Sub + DataFlow + GCS or BigQueryのコンビネーションで作成が可能です。  
 
-また、GoogleのDataFlowのSDK version 1.XがEnd of Lifeなるということで、プログラムの移行及び、streaming処理について記述します。  
+このデザインは趣味で友達と作っているプロダクトのレコメンドと機械学習を行うためのデータ収集基盤として用いたいのと、会社の業務で関連会社のデータ分析もしているのですが、多くの場合、IT業から始まっていない会社はデータ収集基盤が整っていなく、私と数名でエンジニアリングに近いデータ収集からデータサイエンス領域の分析までEnd-to-Endで完結できる感じにしたいという思いがあります。
+
+おまけで、GoogleのDataFlowのSDK version 1.XがEnd of Lifeなるということで、プログラムの移行時にハマった点を記します。  
 
 ## ローカルで開発するときにの注意点
  - 1. JDKはOracle JDKの1.8を使う(OpenJDKではダメ)
@@ -16,12 +18,16 @@
  <div> 図1. 全体のデータの流れ </div>
 </div>
 
+
 これは、一般的なログ収集基盤の基本的な構成になっており、最終的な出力先をBigQueryにすれば、高速なすぐ分析が開始できる基盤がサーバレスで作れますし、画像や言語のような非構造なデータであれば、CloudStrageを出力先にすることもできます。（なお、私個人の好みの問題で、いきなりSQLに投入せずに、CloudStrageに投入してあとからゆっくり、集計角度を決める方法が好みです）  
 
 ## ユーザの面からGoogle App Engineにデータを送る  
-Google Analyticsは様々なログ角度が集計できますが、一部限界があって、生ログを見たい時、特にユーザのクッキーやそれに類するIDなどの粒度で取得して、レコメンドエンジン等に活用したい際に要約値しかわかないという、問題がございます。  
+Google Analyticsは様々なログ角度が集計できますが、一部限界があって、生ログを見たい時、特にユーザのクッキーやそれに類するIDなどの粒度で取得して、レコメンドエンジン等に活用したい際に要約値しかわかないという、問題があります。  
 
-深い部分の仮説立案と検証は、生ログに近い方が多くの場合、データの粒度として適切で、ユーザのイベントを追加したり、粒度を変更したりした際に効率よく吸収できる方法として、データをログを保存するサーバに送りつけるという方法で、JQuery(フロントの知識が古くてすみません)などであると、このようなコードでデータを数秒ごとに送ったり、特定の動作と紐づけて動作させることで記録することができます。  
+また、データの深い部分の仮説立案と検証は、生ログに近い方が多くの場合はデータの粒度として適切です。ユーザのデータを追加したり、粒度を変更したりした際に効率よく吸収できる方法の一つは、データをログを保存するサーバに送りつけるという方法があります。
+
+JQuery(フロントの知識が古くてすみません)などであると、このようなコードでデータを数秒ごとに送ったり、特定の動作と紐づけて動作させることで記録することができます。  
+
 ```js
 $.ajax({
     type: 'POST',
@@ -40,24 +46,25 @@ $.ajax({
 
 ## Pub/Subとは
 
-Pub/Subは、細切れになりがちなデータを効率的に他のサービスにつなぐことに使えます。
+Pub/Subはデータを効率的に他のサービスにつなぐことに使えます。
 <div align="center">
  <img width="600px" src="https://user-images.githubusercontent.com/4949982/47798066-f31f8080-dd6a-11e8-95b8-3bdb9aac47fc.png">
 </div>
-<div align="center"> 図1. </div>
+<div align="center"> 図2. </div>
 
 データを何らかの方法で集めて、Topicとよばれる粒度で送信し、Subscriptionに連結したサービスにつなぎます。
 
 <div align="center">
  <img width="600px" src="https://user-images.githubusercontent.com/4949982/47800032-d5541a80-dd6e-11e8-9b52-bdddda5a9e74.png">
 </div>
-<div align="center"> 図2. </div>
+<div align="center"> 図3. </div>
 
 ## Google App EngineからPub/Subへの繋ぎ
 
-ユーザの画面のJSから受け取ったJSONデータを一度、app engineでパースして、pub/subにpublisherで発行することができます。  
+ユーザの画面のJSから受け取ったJSONデータを一度、app engineでパースして、パースしたデータをTopicに発行することができます。  
 
-appengineに登録したコードはこのようなもを書きました。(golangとかの方が、いろいろと早いらしくいいらしいのですが、書きなれていないので、pythonのflaskを用いました)  
+app engineに登録したコードはこのようなもを書きました。(golangとかの方が、いろいろと早いらしくいいらしいのですが、書きなれていないので、pythonのflaskを用いました)  
+
 ```python
 from flask import Flask, request, jsonify
 import json
@@ -76,7 +83,7 @@ def json_path():
 
         publisher = pubsub_v1.PublisherClient(credentials=credentials)
 
-        project_id = 'YOUR_PROJECT # project_idを入れる 
+        project_id = 'YOUR_PROJECT' # project_idを入れる 
         topic_name = 'YOUR_TOPIC'  # publish先のtopicネームを入れる
         topic_path = publisher.topic_path(project_id, topic_name)
 
@@ -88,7 +95,7 @@ if __name__ == '__main__':
         app.run(host='127.0.0.1', port=8080, debug=True)
 ```
 
-appengineは以下のURLをテンプレートとして簡単に開発することが可能です。  
+app engineは以下のURLをテンプレートとして簡単に開発することが可能です。  
 
 https://cloud.google.com/appengine/docs/flexible/python/writing-and-responding-to-pub-sub-messages
 
@@ -102,10 +109,11 @@ DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得
  <div> 図4. (spotifyのブログより) </div>
 </div>
 
-streamingのDataFlowはGCEのインスタンスが起動し、定期的に実行していることでstreamingとしているので、インスタンスが立ちっぱになるので、そこはbatch処理より安くない要因になっているように思います。  
+streamingのDataFlowはGCEのインスタンスが起動し、定期的に実行していることでstreamingとしているので、インスタンスが立ちっぱになるので、金額的にbatch処理より安くない要因になっているように思います。  
 
 ## DataFlow pipeline  
-DataFlowはpipelineで動作を定義することができ、jsonでデータが入力されているとすると、何かのサニタイズ処理、パース処理、変換処理を行うことができ、ここで、すでに分析角度が決定しているのであれば、BigQueryに投入すればいいはずです。  
+DataFlowはpipelineで動作を定義することができ、jsonなどの何かの非構造化データが入力されているとすると、何かのサニタイズ処理、パース処理、変換処理を行うことができます。ここで分析角度が決定しているのであれば、BigQueryにそのまま投入すればいいはずです。  
+今回は、取得粒度をあとから丁寧に決定したいというモチベもあり、なんの変換もせずに、GCSに吐き出しています。  
 
 ```java
   public static void main(String[] args) {
@@ -133,8 +141,9 @@ DataFlowはpipelineで動作を定義することができ、jsonでデータが
 最初の頃は、JavaをKotlinで一部ラップアップして使っていたのですが、どうにも2.Xにしてからうまく動作しません。  
 わかったことでは、パイプラインの.applyメソッドをチェーンして動作を定義していくのですが、型推論に失敗するようです。  
 
-そのため、かなり冗長ですが、このように、型推論に失敗する段階で、POoutputの変数に束縛することで、動作します（ツラすぎる...）  
+そのため、かなり冗長ですが、コンパイルに失敗する段階で、POoutputの変数に束縛することで、動作します（ツラすぎる...）  
 (以下はminimal wordcountの例)  
+
 ```java
   public static void main(String[] args) {
     //kt.funcs.filter1(" ");
@@ -150,5 +159,13 @@ DataFlowはpipelineで動作を定義することができ、jsonでデータが
     p.run().waitUntilFinish();
   }
 ```
+# コード　
+　今回、意図通りに動作していることを確認した、全体のappengineのコード、pubsubのセットアップスクリプト、dataflowのコードは以下のgithubのこのディレクトリにまとめてあります。(必要ならばリテラルを適宜書き換えてください)  
+ 
+https://github.com/GINK03/gcp-dataflow-kotlin-java-mix/edit/master/pub-sub-streaming/
+
+# まとめ
+　最近のクラウド利用法一般に言えることですが、何やら、ここの言語の選定やら細かいところとかいろいろあるのですが、なにかやりたいXに対して、素晴らしい解決策のこれとこれとこれを組み合わせると動くよ！というデザインが一般化されているように思います。  
+
   
   
