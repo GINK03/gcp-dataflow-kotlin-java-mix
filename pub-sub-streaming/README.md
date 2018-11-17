@@ -88,6 +88,10 @@ if __name__ == '__main__':
         app.run(host='127.0.0.1', port=8080, debug=True)
 ```
 
+appengineは以下のURLをテンプレートとして簡単に開発することが可能です。  
+
+https://cloud.google.com/appengine/docs/flexible/python/writing-and-responding-to-pub-sub-messages
+
 ## DataFlowのstreaming処理方法
 
 DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得粒度（多くは5分などの時間間隔）を設定して、データをパイプライン処理で変換で変換し、任意の出力先に出力することが可能です。  
@@ -146,12 +150,5 @@ DataFlowはpipelineで動作を定義することができ、jsonでデータが
     p.run().waitUntilFinish();
   }
 ```
-
-### 2. appengineの動作設定
-refere : https://cloud.google.com/appengine/docs/flexible/python/writing-and-responding-to-pub-sub-messages
-
-## Google App Engineで最初にデータを受け取る口を作る
-  Pub/Subに投入する前に、Google App EngineでJSONデータ等を受け取る必要があります。 
-  このとき、 `https://cloud.google.com/appengine/docs/standard/python3/quickstart` を参考に、簡単なアプリを開発可能です。  
   
   
