@@ -37,6 +37,22 @@ $.ajax({
     }
 });
 ```
+
+## Pub/Subとは
+
+Pub/Subは、細切れになりがちなデータを効率的に他のサービスにつなぐことに使えます。
+<div align="center">
+ <img width="600px" src="https://user-images.githubusercontent.com/4949982/47798066-f31f8080-dd6a-11e8-95b8-3bdb9aac47fc.png">
+</div>
+<div align="center"> 図1. </div>
+
+データを何らかの方法で集めて、Topicとよばれる粒度で送信し、Subscriptionに連結したサービスにつなぎます。
+
+<div align="center">
+ <img width="600px" src="https://user-images.githubusercontent.com/4949982/47800032-d5541a80-dd6e-11e8-9b52-bdddda5a9e74.png">
+</div>
+<div align="center"> 図2. </div>
+
 ## Google App EngineからPub/Subへの繋ぎ
 
 ユーザの画面のJSから受け取ったJSONデータを一度、app engineでパースして、pub/subにpublisherで発行することができます。  
@@ -72,27 +88,12 @@ if __name__ == '__main__':
         app.run(host='127.0.0.1', port=8080, debug=True)
 ```
 
-## Pub/Subとは
-
-Pub/Subは、細切れになりがちなデータを効率的に他のサービスにつなぐことに使えます。
-<div align="center">
- <img width="600px" src="https://user-images.githubusercontent.com/4949982/47798066-f31f8080-dd6a-11e8-95b8-3bdb9aac47fc.png">
-</div>
-<div align="center"> 図1. </div>
-
-データを何らかの方法で集めて、Topicとよばれる粒度で送信し、Subscriptionに連結したサービスにつなぎます。
-
-<div align="center">
- <img width="600px" src="https://user-images.githubusercontent.com/4949982/47800032-d5541a80-dd6e-11e8-9b52-bdddda5a9e74.png">
-</div>
-<div align="center"> 図2. </div>
-
-
 ## DataFlowのstreaming処理方法
-DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得粒度（多くは5分などの時間間隔）を設定して、データをパイプライン処理で変換で変換し、任意の出力先に出力することが可能です。  
-いろいろな用途が期待され、リアルタイムの異常検出などもできます。  
 
-DataFlowは背景にGCEのインスタンスが起動することになり、立ちっぱになるので、そこはbatch処理より安くない要因になっているように思います。  
+DataFlowのstreamingは実装的には、Windowと呼ばれるstreamingの取得粒度（多くは5分などの時間間隔）を設定して、データをパイプライン処理で変換で変換し、任意の出力先に出力することが可能です。  
+いろいろな用途が期待され、うまくスキャン感覚を設定することで、リアルタイムの異常検出などもできます。  
+
+streamingのDataFlowは背景にGCEのインスタンスが起動することになり、立ちっぱになるので、そこはbatch処理より安くない要因になっているように思います。  
 
 
 ## パイプラインのSDK 1.Xからのシンタックスの変更部分
