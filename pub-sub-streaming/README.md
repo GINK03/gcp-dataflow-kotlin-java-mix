@@ -21,7 +21,22 @@
 ## ユーザの面からGoogle App Engineにデータを送る  
 Google Analyticsは様々なログ角度が集計できますが、一部限界があって、生ログを見たい時、特にユーザのクッキーやそれに類するIDなどの粒度で取得したい際に要約値しかわかないという、問題がございます。  
 
-多くの
+深い部分の仮説立案と検証は、生ログに近い方が多くの場合、データの粒度として適切で、ユーザのイベントを追加したり、粒度を変更したりした際に効率よく吸収できる方法として、データをログを保存するサーバに送りつけるという方法で、JQueryなどであると、このようなコードを数秒ごとに送ったり、特定の動作と紐づけて動作させることで記録することができます。  
+```js
+$.ajax({
+    type: 'POST',
+    url: 'https://to.com/postHere.php',
+    crossDomain: true,
+    data: '{"some":"json"}',
+    dataType: 'json',
+    success: function(responseData, textStatus, jqXHR) {
+        var value = responseData.someKey;
+    },
+    error: function (responseData, textStatus, errorThrown) {
+        alert('POST failed.');
+    }
+});
+```
 
 ## Google App EngineからPub/Subへの繋ぎ
 
