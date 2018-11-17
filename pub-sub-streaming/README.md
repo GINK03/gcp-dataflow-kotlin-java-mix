@@ -1,7 +1,7 @@
 
 # Pub/Sub + Apache Beam（Cloud DataFlow）でログコレクターを作成する
 
-モダンなサーバレスアーキテクチャのログ収集基盤を、GAE + Pub/Sub + DataFlow + GCS or BigQueryのコンビネーションで作成が加工です。  
+モダンなサーバレスアーキテクチャのログ収集基盤を、GAE + Pub/Sub + DataFlow + GCS or BigQueryのコンビネーションで作成が可能です。  
 
 また、GoogleのDataFlowのSDK version 1.XがEnd of Lifeなるということで、プログラムの移行及び、streaming処理について記述します。  
 
@@ -15,7 +15,6 @@
  <img width="100%" src="https://user-images.githubusercontent.com/4949982/48658826-cfa74600-ea8b-11e8-8d02-4a2e228abb61.png">
  <div> 図1. 全体のデータの流れ </div>
 </div>
-
 
 これは、一般的なログ収集基盤の基本的な構成になっており、最終的な出力先をBigQueryにすれば、高速なすぐ分析が開始できる基盤がサーバレスで作れますし、画像や言語のような非構造なデータであれば、CloudStrageを出力先にすることもできます。（なお、私個人の好みの問題で、いきなりSQLに投入せずに、CloudStrageに投入してあとからゆっくり、集計角度を決める方法が好みです）  
 
